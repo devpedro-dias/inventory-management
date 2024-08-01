@@ -1,31 +1,37 @@
 package dev.pedrodias.inventory_management.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import dev.pedrodias.inventory_management.dto.category.CategoryDTO;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.util.Set;
+import java.util.List;
 
-
+@Data
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "categories")
 public class Category {
+
     @Id
-    @GeneratedValue(
-            strategy = GenerationType.IDENTITY
-    )
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(
-            nullable = false,
-            unique = true
-    )
-    private String nome;
-    @OneToMany(
-            mappedBy = "category"
-    )
-    private Set<Product> products;
+
+    @Column(nullable = false, unique = true)
+    private String name;
+
+    @JsonManagedReference
+    @OneToMany(mappedBy = "category")
+    private List<Product> products;
+
+    public CategoryDTO toDTO() {
+        return new CategoryDTO(this.id, this.name);
+    }
+
+    public static Category fromDTO(CategoryDTO dto) {
+        return new Category(dto.getId(), dto.getName(), null);
+    }
 }

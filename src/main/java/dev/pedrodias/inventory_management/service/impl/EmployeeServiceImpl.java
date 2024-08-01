@@ -1,6 +1,6 @@
 package dev.pedrodias.inventory_management.service.impl;
 
-import dev.pedrodias.inventory_management.controller.exception.ResourceNotFoundException; // Supondo que você tenha uma exceção personalizada para recursos não encontrados
+import dev.pedrodias.inventory_management.controller.exception.ResourceNotFoundException;
 import dev.pedrodias.inventory_management.model.Employee;
 import dev.pedrodias.inventory_management.repository.EmployeeRepository;
 import dev.pedrodias.inventory_management.service.EmployeeService;
@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
@@ -50,9 +51,20 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Transactional
-    public void deleteEmployee(Long id) {
+    public boolean deleteEmployee(Long id) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + id));
         employeeRepository.delete(employee);
+        return false;
+    }
+
+    @Transactional
+    public Employee findById(Long customerId) {
+        Optional<Employee> optionalCustomer = employeeRepository.findById(customerId);
+        if (optionalCustomer.isPresent()) {
+            return optionalCustomer.get();
+        } else {
+            throw new ResourceNotFoundException("Customer not found with id: " + customerId);
+        }
     }
 }

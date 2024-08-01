@@ -1,8 +1,12 @@
 package dev.pedrodias.inventory_management.controller;
 
+import dev.pedrodias.inventory_management.dto.customer.CustomerDTO;
 import dev.pedrodias.inventory_management.model.Customer;
 import dev.pedrodias.inventory_management.service.CustomerService;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,41 +20,53 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping({"/api/customers"})
+@NoArgsConstructor
+@RequestMapping("/api/customers")
 public class CustomerController {
+
     @Autowired
     private CustomerService customerService;
 
-    public CustomerController() {
-    }
-
     @GetMapping
-    public ResponseEntity<List<Customer>> getAllCustomers() {
-        List<Customer> customers = this.customerService.getAllCustomers();
-        return new ResponseEntity(customers, HttpStatus.OK);
+    public ResponseEntity<List<CustomerDTO>> getAllCustomers() {
+        List<Customer> customers = customerService.getAllCustomers();
+        List<CustomerDTO> customerDTOs = customers.stream()
+                .map(Customer::toDTO)
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(customerDTOs, HttpStatus.OK);
     }
 
-    @GetMapping({"/{id}"})
-    public ResponseEntity<Customer> getCustomerById(@PathVariable("id") Long id) {
-        Customer customer = this.customerService.getCustomerById(id);
-        return customer != null ? new ResponseEntity(customer, HttpStatus.OK) : new ResponseEntity(HttpStatus.NOT_FOUND);
+    @GetMapping("/{id}")
+    public ResponseEntity<CustomerDTO> getCustomerById(@PathVariable Long id) {
+        Customer customer = customerService.getCustomerById(id);
+        return customer != null ?
+                new ResponseEntity<>(customer.toDTO(), HttpStatus.OK) :
+                new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @PostMapping
-    public ResponseEntity<Customer> createCustomer(@RequestBody Customer customer) {
-        Customer createdCustomer = this.customerService.createCustomer(customer);
-        return new ResponseEntity(createdCustomer, HttpStatus.CREATED);
+    public ResponseEntity<CustomerDTO> createCustomer(@RequestBody CustomerDTO customerDTO) {
+        Customer customer = Customer.fromDTO(customerDTO);
+        Customer newCustomer = customerService.createCustomer(customer);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(newCustomer.toDTO());
     }
 
-    @PutMapping({"/{id}"})
-    public ResponseEntity<Customer> updateCustomer(@PathVariable("id") Long id, @RequestBody Customer customer) {
-        Customer updatedCustomer = this.customerService.updateCustomer(id, customer);
-        return updatedCustomer != null ? new ResponseEntity(updatedCustomer, HttpStatus.OK) : new ResponseEntity(HttpStatus.NOT_FOUND);
+    @PutMapping("/{id}")
+    public ResponseEntity<CustomerDTO> updateCustomer(@PathVariable Long id, @RequestBody CustomerDTO customerDTO) {
+        Customer customer = Customer.fromDTO(customerDTO);
+        customer.setId(id);
+        Customer updatedCustomer = customerService.updateCustomer(id, customer);
+        return updatedCustomer != null ?
+                new ResponseEntity<>(updatedCustomer.toDTO(), HttpStatus.OK) :
+                new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @DeleteMapping({"/{id}"})
-    public ResponseEntity<Void> deleteCustomer(@PathVariable("id") Long id) {
-        this.customerService.deleteCustomer(id);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCustomer(@PathVariable Long id) {
+        boolean deleted = customerService.deleteCustomer(id);
+        return deleted ?
+                new ResponseEntity<>(HttpStatus.NO_CONTENT) :
+                new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 }

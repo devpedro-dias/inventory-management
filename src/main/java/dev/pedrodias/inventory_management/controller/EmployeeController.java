@@ -1,56 +1,65 @@
 package dev.pedrodias.inventory_management.controller;
 
+import dev.pedrodias.inventory_management.dto.employee.EmployeeDTO;
 import dev.pedrodias.inventory_management.model.Employee;
 import dev.pedrodias.inventory_management.service.EmployeeService;
-import java.util.List;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping({"/api/employees"})
+@NoArgsConstructor
+@RequestMapping("/api/employees")
 public class EmployeeController {
+
     @Autowired
     private EmployeeService employeeService;
 
-    public EmployeeController() {
-    }
-
     @GetMapping
-    public ResponseEntity<List<Employee>> getAllEmployees() {
-        List<Employee> employees = this.employeeService.getAllEmployees();
-        return new ResponseEntity(employees, HttpStatus.OK);
+    public ResponseEntity<List<EmployeeDTO>> getAllEmployees() {
+        List<Employee> employees = employeeService.getAllEmployees();
+        List<EmployeeDTO> employeeDTOs = employees.stream()
+                .map(Employee::toDTO)
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(employeeDTOs, HttpStatus.OK);
     }
 
-    @GetMapping({"/{id}"})
-    public ResponseEntity<Employee> getEmployeeById(@PathVariable("id") Long id) {
-        Employee employee = this.employeeService.getEmployeeById(id);
-        return employee != null ? new ResponseEntity(employee, HttpStatus.OK) : new ResponseEntity(HttpStatus.NOT_FOUND);
+    @GetMapping("/{id}")
+    public ResponseEntity<EmployeeDTO> getEmployeeById(@PathVariable Long id) {
+        Employee employee = employeeService.getEmployeeById(id);
+        return employee != null ?
+                new ResponseEntity<>(employee.toDTO(), HttpStatus.OK) :
+                new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @PostMapping
-    public ResponseEntity<Employee> createEmployee(@RequestBody Employee employee) {
-        Employee createdEmployee = this.employeeService.createEmployee(employee);
-        return new ResponseEntity(createdEmployee, HttpStatus.CREATED);
+    public ResponseEntity<EmployeeDTO> createEmployee(@RequestBody EmployeeDTO employeeDTO) {
+        Employee employee = Employee.fromDTO(employeeDTO);
+        Employee newEmployee = employeeService.createEmployee(employee);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(newEmployee.toDTO());
     }
 
-    @PutMapping({"/{id}"})
-    public ResponseEntity<Employee> updateEmployee(@PathVariable("id") Long id, @RequestBody Employee employee) {
-        Employee updatedEmployee = this.employeeService.updateEmployee(id, employee);
-        return updatedEmployee != null ? new ResponseEntity(updatedEmployee, HttpStatus.OK) : new ResponseEntity(HttpStatus.NOT_FOUND);
+    @PutMapping("/{id}")
+    public ResponseEntity<EmployeeDTO> updateEmployee(@PathVariable Long id, @RequestBody EmployeeDTO employeeDTO) {
+        Employee employee = Employee.fromDTO(employeeDTO);
+        employee.setId(id);
+        Employee updatedEmployee = employeeService.updateEmployee(id, employee);
+        return updatedEmployee != null ?
+                new ResponseEntity<>(updatedEmployee.toDTO(), HttpStatus.OK) :
+                new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @DeleteMapping({"/{id}"})
-    public ResponseEntity<Void> deleteEmployee(@PathVariable("id") Long id) {
-        this.employeeService.deleteEmployee(id);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
+        boolean deleted = employeeService.deleteEmployee(id);
+        return deleted ?
+                new ResponseEntity<>(HttpStatus.NO_CONTENT) :
+                new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 }

@@ -1,27 +1,17 @@
 package dev.pedrodias.inventory_management.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 import java.util.List;
-
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Generated;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "orders")
 public class Order {
     @Id
@@ -34,12 +24,10 @@ public class Order {
     private LocalDateTime dateTime;
 
     @ManyToMany
-    @JoinTable(name = "order_product",
-            joinColumns = {
+    @JoinTable(name = "order_items", joinColumns = {
             @JoinColumn(name = "order_id")
-            },
-            inverseJoinColumns = {@JoinColumn(name = "product_id")}
-    )
+            }, inverseJoinColumns = {
+            @JoinColumn(name = "product_id")})
     private List<Product> products;
 
     @ManyToOne

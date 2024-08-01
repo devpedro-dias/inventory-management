@@ -2,6 +2,7 @@ package dev.pedrodias.inventory_management.service.impl;
 
 import dev.pedrodias.inventory_management.controller.exception.InsufficientStockException;
 import dev.pedrodias.inventory_management.controller.exception.ResourceNotFoundException;
+import dev.pedrodias.inventory_management.dto.movement.MovementDTO;
 import dev.pedrodias.inventory_management.model.Movement;
 import dev.pedrodias.inventory_management.model.MovementType;
 import dev.pedrodias.inventory_management.model.Product;
@@ -25,15 +26,16 @@ public class MovementServiceImpl implements MovementService {
     private ProductRepository productRepository;
 
     @Transactional
+    @Override
     public Movement registerEntry(Long productId, int quantity) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
         Movement movement = new Movement(MovementType.IN, product, quantity, new Date());
-
         return movementRepository.save(movement);
     }
 
     @Transactional
+    @Override
     public Movement registerExit(Long productId, int quantity) {
         if (!validateExit(productId, quantity)) {
             throw new InsufficientStockException("Insufficient stock for product ID: " + productId);
@@ -47,11 +49,57 @@ public class MovementServiceImpl implements MovementService {
     }
 
     @Transactional(readOnly = true)
-    public int calculateCurrentStock(Long productId) {
-        List<Movement> movements = movementRepository.findProductById(productId);
-        return movements.stream()
-                .mapToInt(movement -> movement.getMovementType() == MovementType.IN ? movement.getQuantity() : -movement.getQuantity())
-                .sum();
+    @Override
+    public List<Movement> getAllMovements() {
+        return movementRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Movement getMovementById(Long id) {
+        return movementRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Movement not found with ID: " + id));
+    }
+
+    @Transactional
+    @Override
+    public Movement updateMovement(Long id, MovementDTO movementDTO) {
+        Movement existingMovement = movementRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Movement not found with ID: " + id));
+
+        Product product = productRepository.findById(movementDTO.getProductId())
+                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+
+        existingMovement.setMovementType(MovementType.valueOf(movementDTO.getMovementType()));
+        existingMovement.setProduct(product);
+        existingMovement.setQuantity(movementDTO.getQuantity());
+        existingMovement.setDate(movementDTO.getDate());
+
+        return movementRepository.save(existingMovement);
+    }
+
+    @Transactional
+    @Override
+    public Movement createMovement(MovementDTO movementDTO) {
+        Product product = productRepository.findById(movementDTO.getProductId())
+                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+
+        Movement movement = new Movement(
+                MovementType.valueOf(movementDTO.getMovementType()),
+                product,
+                movementDTO.getQuantity(),
+                movementDTO.getDate()
+        );
+
+        return movementRepository.save(movement);
+    }
+
+    @Transactional
+    @Override
+    public void deleteMovement(Long id) {
+        Movement movement = movementRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Movement not found with ID: " + id));
+        movementRepository.delete(movement);
     }
 
     @Transactional(readOnly = true)
@@ -61,38 +109,10 @@ public class MovementServiceImpl implements MovementService {
     }
 
     @Transactional(readOnly = true)
-    public List<Movement> getAllMovements() {
-        return movementRepository.findAll();
-    }
-
-    @Transactional(readOnly = true)
-    public Movement getMovementById(Long id) {
-        return movementRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Movement not found with ID: " + id));
-    }
-
-    @Transactional
-    public Movement updateMovement(Long id, Movement movement) {
-        Movement existingMovement = movementRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Movement not found with ID: " + id));
-
-        existingMovement.setMovementType(movement.getMovementType());
-        existingMovement.setProduct(movement.getProduct());
-        existingMovement.setQuantity(movement.getQuantity());
-        existingMovement.setDate(movement.getDate());
-
-        return movementRepository.save(existingMovement);
-    }
-
-    @Transactional
-    public Movement createMovement(Movement movement) {
-        return movementRepository.save(movement);
-    }
-
-    @Transactional
-    public void deleteMovement(Long id) {
-        Movement movement = movementRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Movement not found with ID: " + id));
-        movementRepository.delete(movement);
+    public int calculateCurrentStock(Long productId) {
+        List<Movement> movements = movementRepository.findProductById(productId);
+        return movements.stream()
+                .mapToInt(movement -> movement.getMovementType() == MovementType.IN ? movement.getQuantity() : -movement.getQuantity())
+                .sum();
     }
 }

@@ -1,7 +1,8 @@
 package dev.pedrodias.inventory_management.service;
 
-import dev.pedrodias.inventory_management.model.Category;
+import dev.pedrodias.inventory_management.dto.product.ProductDTO;
 import dev.pedrodias.inventory_management.model.Product;
+
 import java.util.List;
 
 public interface ProductService {
@@ -9,11 +10,12 @@ public interface ProductService {
 
     Product getProduct(Long id);
 
-    Product createProduct(Product product);
+    Product createProduct(ProductDTO productDTO);
 
-    Product updateProduct(Long id, Product product);
+    Product updateProduct(Long id, ProductDTO productDTO);
 
     void deleteProduct(Long id);
 
-    List<Product> getProductsByCategory(Category category);
+    List<Product> findAllById(List<Long> productIds);
 }
+

@@ -1,15 +1,9 @@
 package dev.pedrodias.inventory_management.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import dev.pedrodias.inventory_management.dto.product.ProductDTO;
+import jakarta.persistence.*;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Generated;
 import lombok.NoArgsConstructor;
 
 @Entity
@@ -21,15 +15,40 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String name;
+
     private double price;
 
     private int quantity;
 
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
 
-    private int totalInventory;
+    public Product(String name, double price, int quantity, Category category) {
+        this.name = name;
+        this.price = price;
+        this.quantity = quantity;
+        this.category = category;
+    }
 
-    private double valueTotalInventory;
+    public static ProductDTO toDTO(Product product) {
+        return new ProductDTO(
+                product.getId(),
+                product.getName(),
+                product.getPrice(),
+                product.getQuantity(),
+                product.getCategory() != null ? product.getCategory().getId() : null
+        );
+    }
+
+    public static Product fromDTO(ProductDTO dto, Category category) {
+        return new Product(
+                dto.getName(),
+                dto.getPrice(),
+                dto.getQuantity(),
+                category
+        );
+    }
 }

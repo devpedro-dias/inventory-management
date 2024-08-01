@@ -1,25 +1,44 @@
 package dev.pedrodias.inventory_management.model;
 
+import dev.pedrodias.inventory_management.dto.customer.CustomerDTO;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Generated;
 import lombok.NoArgsConstructor;
 
-@Entity
 @Data
-@EqualsAndHashCode(callSuper = true)
+@Entity
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "customers")
 public class Customer extends User {
 
     @Column(unique = true)
     private String cnpj;
 
-    public Customer(Long id, String name, String email, String password, String phone, String address, String zipCode, String cnpj) {
-        super(id, name, email, password, phone, address, zipCode);
-        this.cnpj = cnpj;
+    public CustomerDTO toDTO() {
+        return new CustomerDTO(
+                this.getId(),
+                this.getName(),
+                this.getEmail(),
+                this.getPhone(),
+                this.getAddress(),
+                this.getZipCode(),
+                this.cnpj
+        );
+    }
+
+    public static Customer fromDTO(CustomerDTO dto) {
+        Customer customer = new Customer();
+        customer.setId(dto.getId());
+        customer.setName(dto.getName());
+        customer.setEmail(dto.getEmail());
+        customer.setPhone(dto.getPhone());
+        customer.setAddress(dto.getAddress());
+        customer.setZipCode(dto.getZipCode());
+        customer.setCnpj(dto.getCnpj());
+        return customer;
     }
 }

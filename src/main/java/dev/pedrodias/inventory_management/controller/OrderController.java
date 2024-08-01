@@ -1,49 +1,69 @@
 package dev.pedrodias.inventory_management.controller;
 
+import dev.pedrodias.inventory_management.dto.order.OrderDTO;
+import dev.pedrodias.inventory_management.dto.order.OrderDTOConverter;
 import dev.pedrodias.inventory_management.model.Order;
 import dev.pedrodias.inventory_management.service.OrderService;
-import java.util.List;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping({"/api/orders"})
+@NoArgsConstructor
+@RequestMapping("/api/orders")
 public class OrderController {
+
     @Autowired
     private OrderService orderService;
 
-    public OrderController() {
-    }
+    @Autowired
+    private OrderDTOConverter orderDTOConverter;
 
     @GetMapping
-    public List<Order> getAllOrders() {
-        return this.orderService.getAllOrders();
+    public ResponseEntity<List<OrderDTO>> getAllOrders() {
+        List<Order> orders = this.orderService.getAllOrders();
+        List<OrderDTO> orderDTOs = orders.stream()
+                .map(orderDTOConverter::toDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(orderDTOs);
     }
 
-    @GetMapping({"/{id}"})
-    public Order getOrderById(@PathVariable Long id) {
-        return this.orderService.getOrderById(id);
+    @GetMapping("/{id}")
+    public ResponseEntity<OrderDTO> getOrderById(@PathVariable Long id) {
+        Order order = this.orderService.getOrderById(id);
+        if (order != null) {
+            return ResponseEntity.ok(orderDTOConverter.toDTO(order));
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping
-    public Order createOrder(@RequestBody Order order) {
-        return this.orderService.createOrder(order);
+    public ResponseEntity<OrderDTO> createOrder(@RequestBody OrderDTO orderDTO) {
+        Order order = orderDTOConverter.toEntity(orderDTO);
+        Order createdOrder = this.orderService.createOrder(order);
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderDTOConverter.toDTO(createdOrder));
     }
 
-    @PutMapping({"/{id}"})
-    public Order updateOrder(@PathVariable Long id, @RequestBody Order order) {
-        return this.orderService.updateOrder(id, order);
+    @PutMapping("/{id}")
+    public ResponseEntity<OrderDTO> updateOrder(@PathVariable Long id, @RequestBody OrderDTO orderDTO) {
+        Order order = orderDTOConverter.toEntity(orderDTO);
+        Order updatedOrder = this.orderService.updateOrder(id, order);
+        if (updatedOrder != null) {
+            return ResponseEntity.ok(orderDTOConverter.toDTO(updatedOrder));
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    @DeleteMapping({"/{id}"})
-    public void deleteOrder(@PathVariable Long id) {
-        this.orderService.deleteOrder(id);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Boolean> deleteOrder(@PathVariable Long id) {
+        boolean deleted = this.orderService.deleteOrder(id);
+        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 }

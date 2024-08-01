@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
@@ -49,9 +50,20 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Transactional
-    public void deleteCustomer(Long id) {
+    public boolean deleteCustomer(Long id) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + id));
         customerRepository.delete(customer);
+        return false;
+    }
+
+    @Transactional
+    public Customer findById(Long customerId) {
+        Optional<Customer> optionalCustomer = customerRepository.findById(customerId);
+        if (optionalCustomer.isPresent()) {
+            return optionalCustomer.get();
+        } else {
+            throw new ResourceNotFoundException("Customer not found with id: " + customerId);
+        }
     }
 }

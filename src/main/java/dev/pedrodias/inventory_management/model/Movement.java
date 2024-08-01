@@ -1,23 +1,16 @@
 package dev.pedrodias.inventory_management.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
-import java.util.Date;
+import dev.pedrodias.inventory_management.dto.movement.MovementDTO;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+
+import java.util.Date;
 
 @Entity
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "movements")
 public class Movement {
@@ -37,4 +30,14 @@ public class Movement {
     @Temporal(TemporalType.TIMESTAMP)
     private Date date;
 
+    public Movement(MovementType movementType, Product product, int quantity, Date date) {
+        this.movementType = movementType;
+        this.product = product;
+        this.quantity = quantity;
+        this.date = date;
+    }
+
+    public MovementDTO toDTO() {
+        return MovementDTO.fromMovement(this);
+    }
 }
