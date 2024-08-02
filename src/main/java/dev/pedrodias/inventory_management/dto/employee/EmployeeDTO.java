@@ -14,6 +14,8 @@ public class EmployeeDTO extends UserDTO {
 
     private String cpf;
 
-    public EmployeeDTO(Long id, String name, String email, String phone, String address, String zipCode, String cpf) {
+    private String password;
+
+    public EmployeeDTO(Long id, String name, String email, String phone, String address, String zipCode, String cpf, String password) {
     }
 }

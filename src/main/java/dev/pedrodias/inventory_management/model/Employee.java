@@ -18,6 +18,8 @@ public class Employee extends User {
     @Column(unique = true)
     private String cpf;
 
+    private String password;
+
     public EmployeeDTO toDTO() {
         return new EmployeeDTO(
                 this.getId(),
@@ -26,7 +28,8 @@ public class Employee extends User {
                 this.getPhone(),
                 this.getAddress(),
                 this.getZipCode(),
-                this.cpf
+                this.cpf,
+                this.password
         );
     }
 
@@ -39,6 +42,7 @@ public class Employee extends User {
         employee.setAddress(dto.getAddress());
         employee.setZipCode(dto.getZipCode());
         employee.setCpf(dto.getCpf());
+        employee.setPassword(dto.getPassword());
         return employee;
     }
 }

@@ -12,21 +12,20 @@ import lombok.NoArgsConstructor;
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "users")
 public abstract class User {
+
     @Id
-    @GeneratedValue(
-            strategy = GenerationType.IDENTITY
-    )
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String name;
-    @Column(
-            unique = true
-    )
+
+    @Column(unique = true)
     private String email;
-    private String password;
-    @Column(
-            unique = true
-    )
+
+    @Column(unique = true)
     private String phone;
+
     private String address;
+
     private String zipCode;
 }
