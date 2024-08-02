@@ -156,15 +156,15 @@
     UserDTO <|-- EmployeeDTO
     UserDTO <|-- CustomerDTO
 
-    Customer "1" --> "0..*" Order : places
-    Employee "1" --> "0..*" Order : handles
-    Order "1" --> "0..*" OrderItem : contains
-    OrderItem "1" --> "1" Product : refers_to
-    Order "1" --> "0..*" Product : contains
-    Inventory "1" --> "1" Product : stores
-    Product "1" --> "0..*" Movement : has
-    Product "1" --> "1" Category : belongs_to
-    Category "1" --> "0..*" Product : contains
+    Customer "1" --> "0..*" Order
+    Employee "1" --> "0..*" Order
+    Order "1" --> "0..*" OrderItem
+    OrderItem "1" --> "1" Product
+    Order "1" --> "0..*" Product
+    Inventory "1" --> "1" Product 
+    Product "1" --> "0..*" Movement 
+    Product "1" --> "1..*" Category
+    Category "1" --> "0..*" Product 
     Movement "1" --> "1" MovementDTO : mapped_to
     Order "1" --> "1" OrderDTO : mapped_to
     ProductDTO "1" --> "1" Product : mapped_to
