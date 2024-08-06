@@ -64,29 +64,6 @@
         int quantity
     }
 
-    class ProductDTO {
-        Long id
-        String name
-        double price
-        int quantity
-        Long categoryId
-    }
-
-    class CategoryDTO {
-        Long id
-        String name
-        List~Long~ productIds
-    }
-
-    class OrderDTO {
-        Long id
-        String orderStatus
-        LocalDateTime dateTime
-        List~Long~ productIds
-        Long customerId
-        Long employeeId
-    }
-
     class Product {
         Long id
         String name
@@ -109,52 +86,13 @@
         Date date
     }
 
-    class MovementDTO {
-        Long id
-        String movementType
-        Long productId
-        int quantity
-        Date date
-    }
-
     class MovementType {
         IN
         OUT
     }
 
-    class UserDTO {
-        Long id
-        String name
-        String email
-        String phone
-        String address
-        String zipCode
-    }
-
-    class CustomerDTO {
-        Long id
-        String name
-        String email
-        String phone
-        String address
-        String zipCode
-        String cnpj
-    }
-
-    class EmployeeDTO {
-        Long id
-        String name
-        String email
-        String phone
-        String address
-        String zipCode
-        String cpf
-    }
-
     User <|-- Employee
     User <|-- Customer
-    UserDTO <|-- EmployeeDTO
-    UserDTO <|-- CustomerDTO
 
     Customer "1" --> "0..*" Order
     Employee "1" --> "0..*" Order
@@ -165,9 +103,4 @@
     Product "1" --> "0..*" Movement 
     Product "1" --> "1..*" Category
     Category "1" --> "0..*" Product 
-    Movement "1" --> "1" MovementDTO : mapped_to
-    Order "1" --> "1" OrderDTO : mapped_to
-    ProductDTO "1" --> "1" Product : mapped_to
-    CategoryDTO "1" --> "1" Category : mapped_to
-    OrderDTO "1" --> "1" Order : mapped_to
 ```
